@@ -79,6 +79,15 @@ class GrowCutWidget(QtGui.QWidget):
         super(GrowCutWidget, self).__init__(parent)
 
         self.image = image
+
+        from skimage import filter
+        self.edges = filter.sobel(image)
+        self.edges /= self.edges.max()
+
+        import matplotlib.pyplot as plt
+        plt.imshow(self.edges)
+        plt.show()
+
         self.strength = strength
         self.label = label
         self.coordinates = automata.formSamples(
@@ -195,6 +204,7 @@ class GrowCutWidget(QtGui.QWidget):
         self.strength[:], self.label[:] = growcut.numpyAutomate(
             self.coordinates,
             self.image,
+            self.edges,
             self.strength,
             self.label
             )
@@ -216,7 +226,8 @@ class Example(QtGui.QMainWindow):
         # Glue in the grow-cut widget
 
         # Load an image of a particular type
-        image = plt.imread('./examples/flower.png')
+        #        image = plt.imread('./examples/flower.png')
+        image = plt.imread('/tmp/sharkfin_small.jpg')
         lum = np.average(image, 2)
 
         # Form a label grid (0: no label, 1: foreground, 2: background)

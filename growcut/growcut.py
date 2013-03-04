@@ -11,7 +11,7 @@ import automata
 
 def g(x, maxC):
     """ Damping function """
-    return 1. - ((x * 1.) / maxC)
+    return 1. - ((x * 1.) / maxC)**1.5
 
 
 def norm(x):
@@ -20,23 +20,28 @@ def norm(x):
     return np.linalg.norm(x)
 
 
-def numpyAutomate(coordinates, lum, strength, label):
+def numpyAutomate(coordinates, lum, edges, strength, label):
     """ Numpy based grow-cut """
+
+    print coordinates[0].shape, coordinates[1].shape, '!'*100
 
     nextLabel = label.copy().flatten()
     nextStrength = strength.copy().flatten()
 
     CP = lum.flatten()
+    CP_edge = edges.flatten()
     THETAP = strength.flatten()
 
     CQ = lum[coordinates]
+    CQ_edge = edges[coordinates]
     THETAQ = strength[coordinates]
     LQ = label[coordinates]
 
     CPminusCQ = np.abs(np.vstack([CP] * CQ.shape[1]).T - CQ)
+    CPminusCQ_edge = np.abs(np.vstack([CP_edge] * CQ_edge.shape[1]).T - CQ_edge)
 
     attackStrength = g(CPminusCQ, lum.max()) * THETAQ
-    defendStrength = np.vstack([THETAP] * CQ.shape[1]).T
+    defendStrength = np.vstack([THETAP] * CQ.shape[1]).T * (1 + CPminusCQ_edge**3)
 
     growthMask = attackStrength > defendStrength
     cols = np.argmax(growthMask, axis=1)
